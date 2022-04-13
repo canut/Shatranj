@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build, Pack and Publish Shatranj
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - name: Build library
+        run: dotnet build -- configuration Release
+      - name: Pack the nuget
+        run: dotnet pack --configuration Release --no-build --output .
+      - name: Publish to nuget.org
+        run: dotnet nuget push *.nupkg --api-key $NUGET_TOKEN --source https://api.nuget.org/v3/index.json
+        env:
+          NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
